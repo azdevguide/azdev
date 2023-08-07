@@ -1,0 +1,2 @@
+mkdir -p code
+cp Program.cs code/Program.cs.txt
