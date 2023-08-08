@@ -1,0 +1,283 @@
+すべてのステップを順に実行します。
+=================================================== step-01.sh
+### Step 1: プロジェクトの作成
+
+dotnet new worker --force >> logs/dotnet-new.txt
+rm {Program,Worker}.cs;
+touch {Program,IMailSender,MailSender,Commands}.cs
+===================================================
+=================================================== step-02.sh
+### Step 2: パッケージの追加
+dotnet add package ConsoleAppFramework --version 4.2.4 >> logs/dotnet-new.txt
+dotnet add package Azure.Identity --version 1.8.1 >> logs/dotnet-new.txt
+dotnet add package Azure.Communication.Email --version 1.0.0-beta.1 >> logs/dotnet-new.txt
+===================================================
+=================================================== step-03.sh
+### Step 3: Program.csのコーディング
+cp code/Program.cs.txt Program.cs
+===================================================
+=================================================== step-04.sh
+### Step 4: IMailSender.csのコーディング
+cp code/IMailSender.cs.txt IMailSender.cs
+===================================================
+=================================================== step-05.sh
+### Step 5: MailSender.csのコーディング
+cp code/MailSender.cs.txt MailSender.cs
+===================================================
+=================================================== step-06.sh
+### Step 6: Commands.csのコーディング
+cp code/Commands.cs.txt Commands.cs
+===================================================
+=================================================== step-07.sh
+### Step 7: Azureリソースのデプロイ
+
+# リソースグループ名とリージョン
+g=rg-proj16-$(date "+%Y%m%d-%H%M%S")
+l=japaneast
+
+# リソースグループの作成
+az group create -n $g -l $l
+
+# デプロイ
+az deployment group create -n $g -g $g \
+    -f main.bicep -p principalId=$AZDEVSP_OBJECT_ID
+===================================================
+{
+  "id": "/subscriptions/f9d4c1e3-571e-48e6-92fd-0e7046ba064d/resourceGroups/rg-proj16-20230221-162025",
+  "location": "japaneast",
+  "managedBy": null,
+  "name": "rg-proj16-20230221-162025",
+  "properties": {
+    "provisioningState": "Succeeded"
+  },
+  "tags": null,
+  "type": "Microsoft.Resources/resourceGroups"
+}
+{
+  "id": "/subscriptions/f9d4c1e3-571e-48e6-92fd-0e7046ba064d/resourceGroups/rg-proj16-20230221-162025/providers/Microsoft.Resources/deployments/rg-proj16-20230221-162025",
+  "location": null,
+  "name": "rg-proj16-20230221-162025",
+  "properties": {
+    "correlationId": "9f863a85-e6d9-482c-bc12-5ac2b1a8cd32",
+    "debugSetting": null,
+    "dependencies": [
+      {
+        "dependsOn": [
+          {
+            "id": "/subscriptions/f9d4c1e3-571e-48e6-92fd-0e7046ba064d/resourceGroups/rg-proj16-20230221-162025/providers/Microsoft.Communication/emailServices/emailsvnr2ojxvpgggho",
+            "resourceGroup": "rg-proj16-20230221-162025",
+            "resourceName": "emailsvnr2ojxvpgggho",
+            "resourceType": "Microsoft.Communication/emailServices"
+          }
+        ],
+        "id": "/subscriptions/f9d4c1e3-571e-48e6-92fd-0e7046ba064d/resourceGroups/rg-proj16-20230221-162025/providers/Microsoft.Communication/emailServices/emailsvnr2ojxvpgggho/domains/AzureManagedDomain",
+        "resourceGroup": "rg-proj16-20230221-162025",
+        "resourceName": "emailsvnr2ojxvpgggho/AzureManagedDomain",
+        "resourceType": "Microsoft.Communication/emailServices/domains"
+      },
+      {
+        "dependsOn": [
+          {
+            "id": "/subscriptions/f9d4c1e3-571e-48e6-92fd-0e7046ba064d/resourceGroups/rg-proj16-20230221-162025/providers/Microsoft.Communication/emailServices/emailsvnr2ojxvpgggho/domains/AzureManagedDomain",
+            "resourceGroup": "rg-proj16-20230221-162025",
+            "resourceName": "emailsvnr2ojxvpgggho/AzureManagedDomain",
+            "resourceType": "Microsoft.Communication/emailServices/domains"
+          }
+        ],
+        "id": "/subscriptions/f9d4c1e3-571e-48e6-92fd-0e7046ba064d/resourceGroups/rg-proj16-20230221-162025/providers/Microsoft.Communication/communicationServices/commsvnr2ojxvpgggho",
+        "resourceGroup": "rg-proj16-20230221-162025",
+        "resourceName": "commsvnr2ojxvpgggho",
+        "resourceType": "Microsoft.Communication/communicationServices"
+      },
+      {
+        "dependsOn": [
+          {
+            "id": "/subscriptions/f9d4c1e3-571e-48e6-92fd-0e7046ba064d/resourceGroups/rg-proj16-20230221-162025/providers/Microsoft.Communication/communicationServices/commsvnr2ojxvpgggho",
+            "resourceGroup": "rg-proj16-20230221-162025",
+            "resourceName": "commsvnr2ojxvpgggho",
+            "resourceType": "Microsoft.Communication/communicationServices"
+          }
+        ],
+        "id": "/subscriptions/f9d4c1e3-571e-48e6-92fd-0e7046ba064d/resourceGroups/rg-proj16-20230221-162025/providers/Microsoft.Communication/communicationServices/commsvnr2ojxvpgggho/providers/Microsoft.Authorization/roleAssignments/011531ff-bfad-5263-b856-4d9a261e0017",
+        "resourceGroup": "rg-proj16-20230221-162025",
+        "resourceName": "011531ff-bfad-5263-b856-4d9a261e0017",
+        "resourceType": "Microsoft.Authorization/roleAssignments"
+      }
+    ],
+    "duration": "PT4M10.6611255S",
+    "error": null,
+    "mode": "Incremental",
+    "onErrorDeployment": null,
+    "outputResources": [
+      {
+        "id": "/subscriptions/f9d4c1e3-571e-48e6-92fd-0e7046ba064d/resourceGroups/rg-proj16-20230221-162025/providers/Microsoft.Communication/communicationServices/commsvnr2ojxvpgggho",
+        "resourceGroup": "rg-proj16-20230221-162025"
+      },
+      {
+        "id": "/subscriptions/f9d4c1e3-571e-48e6-92fd-0e7046ba064d/resourceGroups/rg-proj16-20230221-162025/providers/Microsoft.Communication/communicationServices/commsvnr2ojxvpgggho/providers/Microsoft.Authorization/roleAssignments/011531ff-bfad-5263-b856-4d9a261e0017",
+        "resourceGroup": "rg-proj16-20230221-162025"
+      },
+      {
+        "id": "/subscriptions/f9d4c1e3-571e-48e6-92fd-0e7046ba064d/resourceGroups/rg-proj16-20230221-162025/providers/Microsoft.Communication/emailServices/emailsvnr2ojxvpgggho",
+        "resourceGroup": "rg-proj16-20230221-162025"
+      },
+      {
+        "id": "/subscriptions/f9d4c1e3-571e-48e6-92fd-0e7046ba064d/resourceGroups/rg-proj16-20230221-162025/providers/Microsoft.Communication/emailServices/emailsvnr2ojxvpgggho/domains/AzureManagedDomain",
+        "resourceGroup": "rg-proj16-20230221-162025"
+      }
+    ],
+    "outputs": {
+      "doNotReply": {
+        "type": "String",
+        "value": "DoNotReply"
+      },
+      "fromSenderDomain": {
+        "type": "String",
+        "value": "d67b2e6b-7669-4eb2-a3ec-b808d7687c3b.azurecomm.net"
+      },
+      "hostName": {
+        "type": "String",
+        "value": "commsvnr2ojxvpgggho.communication.azure.com"
+      },
+      "mailFromSenderDomain": {
+        "type": "String",
+        "value": "d67b2e6b-7669-4eb2-a3ec-b808d7687c3b.azurecomm.net"
+      }
+    },
+    "parameters": {
+      "communicationServicesName": {
+        "type": "String",
+        "value": "commsvnr2ojxvpgggho"
+      },
+      "dataLocation": {
+        "type": "String",
+        "value": "United States"
+      },
+      "emailDomainName": {
+        "type": "String",
+        "value": "AzureManagedDomain"
+      },
+      "emailServicesName": {
+        "type": "String",
+        "value": "emailsvnr2ojxvpgggho"
+      },
+      "location": {
+        "type": "String",
+        "value": "global"
+      },
+      "principalId": {
+        "type": "String",
+        "value": "0e9730ff-3961-448c-ab2e-3fa27bea7d98"
+      }
+    },
+    "parametersLink": null,
+    "providers": [
+      {
+        "id": null,
+        "namespace": "Microsoft.Communication",
+        "providerAuthorizationConsentState": null,
+        "registrationPolicy": null,
+        "registrationState": null,
+        "resourceTypes": [
+          {
+            "aliases": null,
+            "apiProfiles": null,
+            "apiVersions": null,
+            "capabilities": null,
+            "defaultApiVersion": null,
+            "locationMappings": null,
+            "locations": [
+              "global"
+            ],
+            "properties": null,
+            "resourceType": "emailServices",
+            "zoneMappings": null
+          },
+          {
+            "aliases": null,
+            "apiProfiles": null,
+            "apiVersions": null,
+            "capabilities": null,
+            "defaultApiVersion": null,
+            "locationMappings": null,
+            "locations": [
+              "global"
+            ],
+            "properties": null,
+            "resourceType": "emailServices/domains",
+            "zoneMappings": null
+          },
+          {
+            "aliases": null,
+            "apiProfiles": null,
+            "apiVersions": null,
+            "capabilities": null,
+            "defaultApiVersion": null,
+            "locationMappings": null,
+            "locations": [
+              "global"
+            ],
+            "properties": null,
+            "resourceType": "communicationServices",
+            "zoneMappings": null
+          }
+        ]
+      },
+      {
+        "id": null,
+        "namespace": "Microsoft.Authorization",
+        "providerAuthorizationConsentState": null,
+        "registrationPolicy": null,
+        "registrationState": null,
+        "resourceTypes": [
+          {
+            "aliases": null,
+            "apiProfiles": null,
+            "apiVersions": null,
+            "capabilities": null,
+            "defaultApiVersion": null,
+            "locationMappings": null,
+            "locations": [
+              null
+            ],
+            "properties": null,
+            "resourceType": "roleAssignments",
+            "zoneMappings": null
+          }
+        ]
+      }
+    ],
+    "provisioningState": "Succeeded",
+    "templateHash": "12246789373577422381",
+    "templateLink": null,
+    "timestamp": "2023-02-21T07:24:45.308137+00:00",
+    "validatedResources": null
+  },
+  "resourceGroup": "rg-proj16-20230221-162025",
+  "tags": null,
+  "type": "Microsoft.Resources/deployments"
+}
+=================================================== step-08.sh
+### Step 8: 設定ファイル`appsettings.json`の作成
+az deployment group show -n $g -g $g \
+    --query '{mail:{user:properties.outputs.doNotReply.value,
+        domain:properties.outputs.mailFromSenderDomain.value,
+        hostName:properties.outputs.hostName.value}}' > appsettings.json
+===================================================
+=================================================== step-09.sh
+### Step 9: 動作確認
+
+# メールを送信
+dotnet run send-mail \
+    --to "$MAILADDRESS" \
+    --subject 'test subject' \
+    --body 'test body'
+
+# 送信されたメールを確認してください
+===================================================
+ビルドしています...
+=================================================== step-10.sh
+### Step 10: リソースグループの削除
+az group delete -n $g -y
+===================================================
+すべてのステップの実行が終わりました。

@@ -475,3 +475,13 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+
+# azdev
+*.png
+*.wav
+appsettings.json
+appsettings.*.json
+.azure/
+local.settings.json
+tmp/
+logs/

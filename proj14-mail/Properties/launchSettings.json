@@ -1,0 +1,11 @@
+﻿{
+  "profiles": {
+    "proj14_mail": {
+      "commandName": "Project",
+      "dotnetRunMessages": false,
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}
