@@ -1,0 +1,11 @@
+﻿{
+  "profiles": {
+    "proj09_caf_config": {
+      "commandName": "Project",
+      "dotnetRunMessages": false,
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}
