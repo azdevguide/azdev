@@ -1,0 +1,38 @@
+### Azureリソースの作成
+
+# リソースグループ名とリージョン
+g=rg-proj16-$(date "+%Y%m%d-%H%M%S")
+l=japaneast
+
+# 変数の値を保存
+mkdir -p tmp; set |grep -E '^(g|l)=' > tmp/vars
+
+# リソースグループの作成
+az group create -n $g -l $l
+
+# Azureリソースのデプロイ
+az deployment group create -n $g -g $g \
+    -f main.bicep -p principalId=$AZDEVSP_OBJECT_ID
+
+### 設定ファイルの作成
+az deployment group show -n $g -g $g \
+    --query "{cv:{endpoint: properties.outputs.endpoint.value}}" > appsettings.json
+
+### 動作確認
+# ※URLには、インターネットでアクセスが可能な画像のURLを指定
+dotnet run describe-image --url 'https://github.com/azdevguide/azdev/raw/main/proj16-computer-vision/test.jpg'
+
+# (実行結果例):
+# 屋外に立っている猫 0.565643330965331
+# 屋外にいる猫 0.564643330965331
+# 台の上に座っている猫 0.5008907090332411
+
+### リソースグループの削除
+
+# Cognitive Servicesアカウント名を取得
+accountname=$(az cognitiveservices account list -g $g --query '[].name' -o tsv|tr -d '\r\n')
+# リソースグループを削除
+az group delete -n $g -y
+# 削除されたCognitive Servicesアカウントが「削除されたリソース」となって48時間残る。それも削除(purge)する。
+sleep 5
+az cognitiveservices account purge -l $l -n "$accountname" -g $g

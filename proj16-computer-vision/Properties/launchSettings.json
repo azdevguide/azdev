@@ -1,0 +1,11 @@
+﻿{
+  "profiles": {
+    "proj16_computer_vision": {
+      "commandName": "Project",
+      "dotnetRunMessages": false,
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}

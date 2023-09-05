@@ -1,0 +1,7 @@
+# outfile=`mktemp`
+# bash -e scripts/run.azcli |tee -a "$outfile"
+# diff --strip-trailing-cr example.txt "$outfile"
+
+outfile=`mktemp`
+yes|bash run.sh |tee "$outfile"
+diff --strip-trailing-cr example.txt "$outfile"
