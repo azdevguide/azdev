@@ -1,0 +1,47 @@
+### Azureリソースのデプロイ
+
+# リソースグループ名とリージョン
+g=rg-proj15-$(date "+%Y%m%d-%H%M%S")
+l=japaneast
+
+# 変数の値を保存
+mkdir -p tmp; set |grep -E '^(g|l)=' > tmp/vars
+
+# リソースグループの作成
+az group create -n $g -l $l
+
+# デプロイ
+az deployment group create -n $g -g $g \
+    -f main.bicep -p principalId=$AZDEVSP_OBJECT_ID
+
+### 設定ファイルの作成
+
+voice='ja-JP-NanamiNeural'
+# voice='ja-JP-KeitaNeural'
+output='output.wav'
+# output='speaker'
+az deployment group show -n $g -g $g \
+    --query "{speech:{
+        resourceId: properties.outputs.resourceId.value,
+        region: '$l',
+        language: 'ja-JP',
+        voiceName: '$voice',
+        output: '$output'}}" > appsettings.json
+
+### 動作確認
+
+if [ -f $output ]; then rm $output; fi
+dotnet run speech --message 'みなさん、おはようございます'
+
+### リソースグループの削除
+az group delete -n $g -y
+
+# Cognitive Serviceアカウントを削除すると「削除されたリソース」となって48時間残るので、こちらも削除する
+# subscriptionId=$(az account show --query id -o tsv|tr -d '\r\n')
+# az rest --method get --header 'Accept=application/json' -u "https://management.azure.com/subscriptions/$subscriptionId/providers/Microsoft.CognitiveServices/deletedAccounts?api-version=2021-04-30" --query 'value[].id' -o tsv|while read -r id; do
+#     id=$(echo $id|tr -d '\r\n')
+#     az rest --method delete --header 'Accept=application/json' -u "https://management.azure.com$id?api-version=2021-04-30"
+# done
+
+# 以下参考 Cognitive Service アカウント リソースをpurge
+# https://learn.microsoft.com/ja-jp/azure/cognitive-services/manage-resources
