@@ -1,0 +1,64 @@
+### リソースグループの作成
+
+# リソースグループ名とリージョン
+g=rg-proj17-$(date "+%Y%m%d-%H%M%S")
+l=japaneast
+
+# 変数の値を保存
+mkdir -p tmp; set |grep -E '^(g|l)=' > tmp/vars
+
+# リソースグループの作成
+az group create -n $g -l $l
+
+### Azureリソースのデプロイ
+
+az deployment group create -g $g \
+    -f main.bicep -p principalId=$AZDEVSP_OBJECT_ID
+
+### 設定ファイルの作成
+
+q='{blob:{endpoint:join(``,[[0].primaryEndpoints.blob,`images`])}}'
+az storage account list -g $g --query "$q" > appsettings.json
+
+### Blobにアクセスできるようになるまで待つ
+
+endpoint=$(az storage account list -g $g --query '[].primaryEndpoints.blob' -otsv|tr -d '\r\n')
+proj99-azdev-tool wait-blob --endpoint "$endpoint"
+
+### ローカルでの動作確認
+
+# バックグランドでWebアプリを実行
+dotnet run --urls=http://localhost:8080 &
+
+sleep 10
+
+echo 'Webブラウザーで http://localhost:8080 にアクセスして、'
+echo 'アップローダーの動作を確認してください。'
+read -p '確認が終わったらEnterキーを押してください: '
+
+kill %1
+
+### ローカルのWebアプリをApp Serviceアプリへデプロイ
+
+# .azure フォルダがあれば削除
+if [ -d '.azure' ]; then rm -rf '.azure'; fi
+
+# デプロイされたアプリとプランの名前を取得
+app=$(az webapp list -g "$g" --query '[].name' -otsv)
+plan=$(az appservice plan list -g "$g" --query '[].name' -otsv)
+
+# ローカルのWebアプリをApp Serviceアプリへデプロイ
+az webapp up -n "$app" -g "$g" -p "$plan" -l "$l" \
+--os-type 'Windows' --runtime 'dotnet:7' --sku 'F1'
+
+# .azure フォルダが自動的に作成されるが不要なので削除
+if [ -d '.azure' ]; then rm -rf '.azure'; fi
+
+# App ServiceのアプリをWebブラウザーで開く
+az webapp browse -n "$app" -g "$g"
+
+echo 'App ServiceのアプリをWebブラウザーで開きました。'
+echo 'アップローダーの動作を確認してください。'
+
+### リソースグループの削除
+az group delete -n $g -y

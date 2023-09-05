@@ -1,0 +1,12 @@
+@page
+@model IndexModel
+
+<form method="post" enctype="multipart/form-data" asp-action="Post">
+    <input asp-for="Image" />
+    <button>アップロード</button>
+</form>
+
+@foreach (var url in @Model.Urls)
+{
+    <img src="@url" width="200">
+}
