@@ -1,0 +1,60 @@
+### リソースグループの作成
+
+# リソースグループ名/リージョン名
+g=rg-proj12-$(date "+%Y%m%d-%H%M%S")
+l=japaneast
+
+# 変数の値を保存
+mkdir -p tmp; set |grep -E '^(g|l)=' > tmp/vars
+
+# リソースグループの作成
+az group create -n $g -l $l
+
+### Azureリソースをデプロイ
+
+az deployment group create -n $g -g $g \
+-f main.bicep -p principalId=$AZDEVSP_OBJECT_ID
+
+### 設定ファイル`appsettings.json`の作成
+
+az deployment group show -n $g -g $g \
+--query '{blob:{endpoint:properties.outputs.endpoint.value}}' \
+> appsettings.json
+
+### Blobにアクセスできるようになるまで待つ
+
+endpoint=$(az storage account list -g $g --query '[].primaryEndpoints.blob' -otsv|tr -d '\r\n')
+proj99-azdev-tool wait-blob --endpoint "$endpoint"
+
+### 動作確認(1)Blobのアップロード
+
+# テスト用ファイルを作成
+echo hello > test.txt
+
+# Blobをアップロード
+dotnet run upload --path test.txt
+
+# Blob一覧で、アップロードされたBlobを確認
+dotnet run list
+
+### 動作確認(2)Blobのダウンロード
+
+# ローカルのファイルを削除
+rm test.txt
+
+# ダウンロード
+dotnet run download --path test.txt
+
+# test.txt が存在することを確認
+ls *.txt
+
+### 動作確認(3)Blobの削除
+
+# Blobを削除
+dotnet run delete --path test.txt
+
+# Blob一覧で、Blobが削除されたことを確認
+dotnet run list
+
+### リソースグループの削除
+az group delete -n $g -y

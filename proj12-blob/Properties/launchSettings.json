@@ -1,0 +1,11 @@
+﻿{
+  "profiles": {
+    "proj12_blob": {
+      "commandName": "Project",
+      "dotnetRunMessages": false,
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}
