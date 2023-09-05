@@ -1,0 +1,11 @@
+﻿{
+  "profiles": {
+    "proj13_cosmosdb": {
+      "commandName": "Project",
+      "dotnetRunMessages": false,
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}

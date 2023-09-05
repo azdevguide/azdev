@@ -1,0 +1,65 @@
+### Azureリソースの作成
+
+# リソースグループ名/リージョン名
+g="rg-proj13-$(date '+%Y%m%d-%H%M%S')"
+l=japaneast
+
+# 変数の値を保存
+mkdir -p tmp; set |grep -E '^(g|l)=' > tmp/vars
+
+# リソースグループの作成
+az group create -n $g -l $l
+
+### Azureリソースのデプロイ
+az deployment group create -n $g -g $g \
+    -f main.bicep -p principalId=$AZDEVSP_OBJECT_ID
+
+### 設定ファイルの作成
+query='{cosmosdb:{endpoint:properties.outputs.endpoint.value}}'
+az deployment group show -n $g -g $g \
+    --query "$query" > appsettings.json
+
+### Cosmos DBにアクセスできるようになるまで待つ
+
+endpoint=$(az cosmosdb list -g $g --query '[].documentEndpoint' -otsv|tr -d '\r\n')
+proj99-azdev-tool wait-cosmos --endpoint "$endpoint"
+
+### 動作確認(1)データを追加
+
+dotnet run insert --customer yamada --id 1 \
+    --order-detail '{"beer": 1, "yakitori": 2}'
+dotnet run insert --customer yamada --id 2 \
+    --order-detail '{"kakuhai": 1}'
+dotnet run insert --customer fujii --id 1 \
+    --order-detail '{"lemonsour": 1, "potesara": 1}'
+dotnet run insert --customer fujii --id 2 \
+    --order-detail '{"wine": 1}'
+
+### 動作確認(2)すべてのデータの取得
+
+dotnet run select-all
+
+### 動作確認(3)データの更新
+
+# 注文データの更新
+dotnet run update --customer yamada --id 1 \
+--order-detail '{"beer": 2, "yakitori": 4}'
+
+# 更新した注文データを取得して確認
+dotnet run read --customer yamada --id 1
+
+### 動作確認(4)データの検索
+
+# 顧客を指定して、注文データを検索
+dotnet run select-by-customer --customer yamada
+
+### 動作確認(5)データの削除
+
+# 顧客とIDを指定して、注文データを削除
+dotnet run delete --customer yamada --id 1
+
+# すべての注文データを取得して、削除を確認
+dotnet run select-all
+
+### Step 8: リソースグループの削除
+az group delete -n $g -y
