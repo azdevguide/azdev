@@ -1,0 +1,6 @@
+mkdir -p code
+
+cp IMailSender.cs sample/IMailSender.cs.txt
+cp MailSender.cs sample/MailSender.cs.txt
+cp Commands.cs sample/Commands.cs.txt
+cp Program.cs sample/Program.cs.txt

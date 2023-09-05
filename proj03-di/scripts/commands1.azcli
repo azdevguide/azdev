@@ -1,0 +1,20 @@
+### プロジェクトの作成
+dotnet new console --force
+
+### パッケージの追加
+dotnet add package Microsoft.Extensions.DependencyInjection --version 7.0.0
+
+### IMailSender.csのコーディング
+cp code/IMailSender.cs.txt IMailSender.cs
+
+### MailSender.csのコーディング
+cp code/MailSender.cs.txt MailSender.cs
+
+### Commands.csのコーディング
+cp code/Commands.cs.txt Commands.cs
+
+### Program.csのコーディング
+cp code/Program.cs.txt Program.cs
+
+### 実行
+dotnet run
