@@ -1,0 +1,6 @@
+# outfile='example.txt'
+# rm "$outfile" 2> /dev/null || true
+# bash -e scripts/run.azcli |tee -a "$outfile"
+
+outfile='example.txt'
+yes|bash run.sh |tee "$outfile"

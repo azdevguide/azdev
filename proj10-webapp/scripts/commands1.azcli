@@ -1,0 +1,60 @@
+### プロジェクトの作成
+dotnet new webapp --force >> logs/dotnet-new.txt
+
+# ユーザーシークレットIDを削除（.csprojの変更を防止）
+sed -i '/UserSecretsId/d' *.csproj
+
+# 実行時の「ビルドしています...」の表示を抑止
+sed -i '/dotnetRunMessages/ s/true/false/' Properties/launchSettings.json
+
+### DIの準備
+
+# IMailSender.csのコーディング
+cp code/IMailSender.cs.txt IMailSender.cs
+
+# MailSender.csのコーディング
+cp code/MailSender.cs.txt MailSender.cs
+
+### Program.csの構造の確認
+
+# Program.csを開き、
+# 中のコードの大まかな構造を確認します。
+# （詳しくは書籍本文を参照してください）
+
+### Program.csのコーディング
+
+# Program.csのコーディング
+cp code/Program.cs.txt Program.cs
+
+### Razorページの追加
+
+# (Pages/Sample.cshtmlと Pages/Sample.cshtml.csを追加)
+dotnet new page -n Sample -o Pages/ --namespace WebAppSample1.Pages --force >> logs/dotnet-new.txt
+
+### Razorページのコーディング
+
+# Pages/Sample.cshtmlのコーディング
+cp code/Pages/Sample.cshtml.txt Pages/Sample.cshtml
+
+# Pages/Sample.cshtml.csのコーディング
+cp code/Pages/Sample.cshtml.cs.txt Pages/Sample.cshtml.cs
+
+### 動作確認
+
+# アプリを実行
+export MYCONFIG_MESSAGE='Hello from environment variable'
+dotnet run --urls=http://localhost:8080 &
+
+# しばらく待ちます。
+# この間に http://localhost:8080/Sample に
+# Webブラウザーでアクセスして動作を確認することができます。
+
+sleep 20
+
+# サンプルページへのアクセス
+curl -s http://localhost:8080/Sample -o logs/page.txt
+
+sleep 3
+
+# バックグラウンドで起動したWebアプリのジョブのkill
+kill %1
