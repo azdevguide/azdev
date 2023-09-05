@@ -1,0 +1,20 @@
+### プロジェクトの作成
+dotnet new console --force >> logs/dotnet-new.txt
+touch appsettings.json
+
+### パッケージの追加
+dotnet add package Microsoft.Extensions.Configuration.Json --version 7.0.0 >> logs/add-package.txt
+
+### 設定ファイル appsettings.jsonの作成
+cp code/appsettings.json.txt appsettings.json
+
+### プロジェクトファイルの変更
+cp code/proj05-config.csproj.txt proj05-config.csproj
+
+### Program.csのコーディング
+cp code/Program.cs.txt Program.cs
+
+### 実行
+
+# 設定ファイルから読み取った設定値 `1` が表示されます
+dotnet run
