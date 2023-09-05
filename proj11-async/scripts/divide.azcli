@@ -1,0 +1,22 @@
+rm step-*.sh 2>/dev/null || true
+
+tmpfile=''
+cat \
+    scripts/commands*.azcli \
+| awk '
+BEGIN {
+    RS="###"
+    no=1
+}
+{
+    if (NR != 1) {
+        file = sprintf("step-%02d.sh", no)
+        printf("### Step %d:", no) > file
+        print $0 > file
+        no++
+    }
+}'
+
+for file in step-*.sh; do
+    sed -i -e '/./,$!d' -e :a -e '/^\n*$/{$d;N;ba' -e '}' $file
+done

@@ -1,0 +1,12 @@
+### プロジェクトの作成
+
+dotnet new console --force >> logs/dotnet-new.txt
+
+### `Program.cs`のコーディング
+
+cp code/Program.cs.txt Program.cs
+
+### 動作確認
+
+echo 'hello' > test.txt
+dotnet run
