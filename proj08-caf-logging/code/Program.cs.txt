@@ -1,0 +1,12 @@
+ConsoleApp.CreateBuilder(args)
+.ConfigureLogging((context, logging) =>
+{
+    logging.ClearProviders();
+    logging.AddSimpleConsole(options =>
+    {
+        options.SingleLine = true;
+    });
+    logging.AddFilter(nameof(Commands), LogLevel.Trace);
+})
+.Build()
+.AddCommands<Commands>().Run();

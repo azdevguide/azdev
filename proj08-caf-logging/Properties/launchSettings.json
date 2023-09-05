@@ -1,0 +1,11 @@
+﻿{
+  "profiles": {
+    "proj08_caf_logging": {
+      "commandName": "Project",
+      "dotnetRunMessages": false,
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}
