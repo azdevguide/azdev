@@ -1,0 +1,2 @@
+pack:
+	bash install.sh

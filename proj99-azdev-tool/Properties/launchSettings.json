@@ -1,0 +1,11 @@
+﻿{
+  "profiles": {
+    "proj99_retry": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}
