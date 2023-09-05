@@ -1,0 +1,11 @@
+### プロジェクトの作成
+dotnet new console --force
+
+### パッケージの追加
+dotnet add package Microsoft.Extensions.Logging.Console --version 7.0.0
+
+### Program.csのコーディング
+cp code/Program.cs.txt Program.cs
+
+### 実行
+dotnet run
