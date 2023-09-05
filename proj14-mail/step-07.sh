@@ -1,7 +1,7 @@
 ### Step 7: Azureリソースのデプロイ
 
 # リソースグループ名とリージョン
-g=rg-proj16-$(date "+%Y%m%d-%H%M%S")
+g=rg-proj14-$(date "+%Y%m%d-%H%M%S")
 l=japaneast
 
 # 変数の値を保存
