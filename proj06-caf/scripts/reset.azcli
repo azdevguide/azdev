@@ -1,0 +1,1 @@
+rm -r bin/ obj/ *.cs *.csproj appsettings.json appsettings.*.json Properties/ 2> /dev/null || true
