@@ -1,0 +1,11 @@
+﻿{
+  "profiles": {
+    "proj23_appconfig": {
+      "commandName": "Project",
+      "dotnetRunMessages": false,
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}

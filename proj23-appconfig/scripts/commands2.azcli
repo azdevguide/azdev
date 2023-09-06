@@ -1,0 +1,71 @@
+### Azureリソースの作成
+
+# リソースグループ名/リージョン名
+g=rg-proj23-$(date "+%Y%m%d-%H%M%S")
+l=japaneast
+
+# 変数の値を保存
+mkdir -p tmp; set |grep -E '^(g|l)=' > tmp/vars
+
+# リソースグループの作成
+az group create -n $g -l $l
+
+# Azureリソースの作成
+az deployment group create -n $g -g $g -f main.bicep \
+    -p principalId=$AZDEVSP_OBJECT_ID
+
+### 設定ファイルの作成
+q='{appconfig:{endpoint:[0].endpoint}}'
+az appconfig list -g $g --query "$q" > appsettings.json
+
+### Key Vaultにアクセスできるようになるまで待つ
+
+endpoint=$(az keyvault list -g $g --query '[].properties.vaultUri' -otsv |tr -d '\r\n')
+proj99-azdev-tool wait-key-vault --endpoint "$endpoint"
+
+### App Configurationにアクセスできるようになるまで待つ
+
+# ロール割り当てが ID（サービスプリンシパル）に対して
+# 行われた後、実際にそれが反映され、この ID を使用して
+# App Configuration に格納されているデータにアクセスできるように
+# なるまで、最大で 15 分かかる場合があります。
+
+endpoint=$(az appconfig list -g $g --query '[].endpoint' -otsv)
+proj99-azdev-tool wait-app-configuration --endpoint "$endpoint"
+
+### App Configurationへの構成値/機能フラグの設定
+
+# App Configurationのリソース名を取得
+appCfgName=$(az appconfig list -g $g --query "[0].name" -otsv |tr -d '\r\n')
+
+# 構成の設定
+az appconfig kv set -n $appCfgName --key 'key1' --value 'value1' -y
+
+# 機能フラグの設定
+az appconfig feature set -n $appCfgName --feature Feature1 -y
+az appconfig feature enable -n $appCfgName --feature Feature1 -y
+
+### Key Vaultへのシークレットの設定
+
+# Key Vaultのリソース名を取得
+kvName=$(az keyvault list -g $g --query "[0].name" -otsv |tr -d '\r\n')
+
+# シークレットを設定（azコマンドから）
+az keyvault secret set \
+--vault-name $kvName -n secret1 --value secretvalue1
+
+# シークレットを取得（azコマンドから）
+az keyvault secret show \
+--vault-name $kvName -n secret1 --query value -otsv
+
+### Key Vault参照の作成
+secretUri="https://$kvName.vault.azure.net/secrets/secret1"
+az appconfig kv set-keyvault \
+-n $appCfgName --key secret1 \
+--secret-identifier "$secretUri" -y
+
+### 構成、機能フラグ、Key Vault参照を取得（プログラムから）
+dotnet run test
+
+### リソースグループを削除
+az group delete -n $g -y
