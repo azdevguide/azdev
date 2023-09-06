@@ -1,0 +1,43 @@
+### Azureリソースの作成
+
+# リソースグループ名/リージョン名
+g=rg-proj22-$(date "+%Y%m%d-%H%M%S")
+l=japaneast
+
+# 変数の値を保存
+mkdir -p tmp; set |grep -E '^(g|l)=' > tmp/vars
+
+# リソースグループの作成
+az group create -n $g -l $l
+
+# Azureリソースの作成
+az deployment group create -n $g -g $g -f main.bicep \
+    -p principalId=$AZDEVSP_OBJECT_ID
+
+### 設定ファイル`appsettings.json`の作成
+q='{keyvault:{endpoint:[0].properties.vaultUri}}'
+az keyvault list -g $g --query "$q" > appsettings.json
+
+### Key Vaultにアクセスできるようになるまで待つ
+
+endpoint=$(az keyvault list -g $g --query '[].properties.vaultUri' -otsv |tr -d '\r\n')
+proj99-azdev-tool wait-keyvault --endpoint "$endpoint"
+
+### Key Vaultへのシークレットの設定
+
+# Key Vaultのリソース名を取得
+name=$(az keyvault list -g $g --query "[0].name" -otsv|tr -d '\r\n')
+
+# シークレットを設定（azコマンドから）
+az keyvault secret set \
+--vault-name $name -n key1 --value value1
+
+# シークレットを取得（azコマンドから）
+az keyvault secret show \
+--vault-name $name -n key1 --query value -otsv
+
+### シークレットを取得（プログラムから）
+dotnet run get --key key1
+
+### リソースグループを削除
+az group delete -n $g -y

@@ -1,0 +1,11 @@
+﻿{
+  "profiles": {
+    "proj22_keyvault": {
+      "commandName": "Project",
+      "dotnetRunMessages": false,
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}
