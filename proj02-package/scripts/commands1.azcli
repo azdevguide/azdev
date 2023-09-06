@@ -2,7 +2,7 @@
 dotnet new console -n proj02-package -o . --force
 
 ### パッケージの追加
-dotnet add package SixLabors.ImageSharp --version 2.1.3
+dotnet add package SixLabors.ImageSharp --version 3.0.2
 
 ### Program.csのコーディング
 cp code/Program.cs.txt Program.cs
