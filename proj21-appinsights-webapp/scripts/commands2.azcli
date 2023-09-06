@@ -1,0 +1,52 @@
+### Azureリソースの作成
+
+# リソースグループ名/リージョン名
+g=rg-proj21-$(date "+%Y%m%d-%H%M%S")
+l=japaneast
+
+# 変数の値を保存
+mkdir -p tmp; set |grep -E '^(g|l)=' > tmp/vars
+
+# リソースグループの作成
+az group create -n $g -l $l
+
+# Azureリソースの作成
+az deployment group create -n $g -g $g -f main.bicep \
+-p principalId=$AZDEVSP_OBJECT_ID
+
+### 設定ファイルの作成
+q='{ApplicationInsights:{ConnectionString:properties.outputs.connectionString.value}}'
+az deployment group show -n $g -g $g --query "$q" > appsettings.json
+
+### アプリの実行（イベントとログの送信）
+
+dotnet run --urls=http://localhost:8080 &
+
+sleep 20
+
+### 実行結果の確認
+
+sleep 10
+tests=10
+for i in `seq 1 $tests`; do
+    echo ==============================================
+    echo "Application Insights 動作テスト ($i / $tests)"
+    date
+    echo Azure portalのApplication Insightsで
+    echo 「トランザクションの検索」を更新してください
+    echo （Azure portalに表示されるまで時間がかかります）
+    echo ==============================================
+    echo トップページにアクセスします。
+    echo （テストの例外が表示されます）
+    curl http://localhost:8080 > /dev/null
+    if [ "$i" != "$tests" ]; then
+        echo '1分待ちます'
+        sleep 60
+    fi
+done
+
+# ジョブを終了させる
+kill %1
+
+### リソースグループを削除
+az group delete -n $g -y
