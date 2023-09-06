@@ -1,0 +1,103 @@
+### リソースグループの作成
+
+# リソースグループ名とリージョン
+g=rg-proj18-$(date "+%Y%m%d-%H%M%S")
+l=japaneast
+
+# 変数の値を保存
+mkdir -p tmp; set |grep -E '^(g|l)=' > tmp/vars
+
+# リソースグループの作成
+az group create -n $g -l $l
+
+### Azureリソースのデプロイ
+
+az deployment group create -g $g -f main.bicep \
+    -p principalId=$AZDEVSP_OBJECT_ID
+
+### 設定ファイルの作成
+
+az storage account list -g $g \
+    --query '{IsEncrypted:contains(`a`,`b`),
+        Values:{
+            AzureWebJobsStorage__accountName:[0].name,
+            FUNCTIONS_WORKER_RUNTIME:`dotnet-isolated`
+        }
+    }' > local.settings.json
+
+### Blobにアクセスできるようになるまで待つ
+
+endpoint=$(az storage account list -g $g --query '[].primaryEndpoints.blob' -otsv|tr -d '\r\n')
+proj99-azdev-tool wait-blob --endpoint "$endpoint"
+
+### 開発環境での関数のテスト
+
+# 関数を起動（ジョブとして）
+func start > logs/func.txt &
+
+# 関数が起動するのを待つ
+until grep -q 'Worker process started' logs/func.txt; do sleep 1; done
+
+### 関数の動作（サムネイル生成）を確認
+
+# テスト用画像`cat.jpg`をストレージアカウント内のinputコンテナーにアップロード
+proj99-azdev-tool upload-blob \
+    --endpoint "$endpoint" --container 'input' --path 'cat.jpg'
+
+# 関数が実行されるのを待つ
+until grep -q 'Executed.*Functions.Thumbnail.*Succeeded' logs/func.txt; do sleep 1; done
+
+# 生成された画像`cat.png`をダウンロード
+proj99-azdev-tool download-blob \
+    --endpoint "$endpoint" --container 'output' --path 'cat.png'
+
+# ダウンロードした`cat.png`を確認(100x100のサイズになっている)
+file cat.png
+
+### 関数を終了させる
+
+# ジョブをkill
+kill %1
+
+# killが終わるまで少し待つ
+sleep 10
+
+### 関数の発行
+
+# 関数名
+app=$(az functionapp list -g $g --query '[].name' -otsv|tr -d '\r\n')
+
+# 発行
+func azure functionapp publish $app
+
+# 関数が安定するまで少し待つ
+sleep 60
+
+### Azureでの関数のテスト
+
+until
+    # テスト用画像`dog.jpg`をストレージアカウント内のinputコンテナーにアップロード
+    proj99-azdev-tool upload-blob \
+        --endpoint "$endpoint" --container 'input' --path 'dog.jpg'
+
+    # Azure Functionsで関数が実行されるまで少し待つ
+    sleep 30
+
+    # 生成された画像`dog.png`をダウンロード
+    EXIT_CODE=0
+    proj99-azdev-tool download-blob \
+        --endpoint "$endpoint" --container 'output' \
+        --path 'dog.png' >> logs/blob.txt || EXIT_CODE=$?
+
+    # 成功?
+    [ "$EXIT_CODE" = "0" ]
+do
+    # 関数が動作するまでリトライ
+    sleep 10
+done
+
+# ダウンロードした`dog.png`を確認(100x100のサイズになっている)
+file dog.png
+
+### リソースグループの削除
+az group delete -n $g -y
