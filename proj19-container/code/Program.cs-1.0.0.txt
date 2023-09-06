@@ -1,0 +1,3 @@
+﻿Console.WriteLine("version 1.0.0");
+var now = DateTime.UtcNow.AddHours(9);
+Console.WriteLine(now);

@@ -1,0 +1,15 @@
+### プロジェクトの作成
+
+dotnet new console --force >> logs/dotnet-new.txt
+
+### Program.csのコーディング（バージョン1.0.0）
+cp code/Program.cs-1.0.0.txt Program.cs
+
+### ローカルでテスト実行(1回目, 1.0.0)
+dotnet run
+
+### Dockerfileのコーディング
+cp code/Dockerfile.txt Dockerfile
+
+### .dockerignoreの作成
+cp code/.dockerignore.txt .dockerignore

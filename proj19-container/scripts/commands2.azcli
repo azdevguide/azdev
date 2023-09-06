@@ -1,0 +1,56 @@
+### Azureリソースを作成
+
+# リソースグループ名・リージョン名
+g=rg-proj19-$(date "+%Y%m%d-%H%M%S")
+l=japaneast
+
+# 変数の値を保存
+mkdir -p tmp; set |grep -E '^(g|l)=' > tmp/vars
+
+# リソースグループを作成
+az group create -n $g -l $l
+
+# デプロイ
+az deployment group create -g $g -f main.bicep
+
+### コンテナーのビルドと実行(最初のバージョン)
+
+# ACRでイメージをビルド
+acr=$(az acr list -g $g --query '[].name' -otsv|tr -d '\r\n')
+az acr build -r $acr -t date:1.0.0 .
+
+# ACIでコンテナーを実行
+id=$(az identity list -g $g --query '[].id' -otsv|tr -d '\r\n')
+az container create -n date -g $g --restart-policy Never \
+--image $acr.azurecr.io/date:1.0.0 \
+--acr-identity $id --assign-identity $id
+
+# ACIのログを取得
+az container logs -n date -g $g
+
+### コンテナーのビルドと実行(バージョンアップ)
+
+# Program.csのコーディング
+cp code/Program.cs-1.0.1.txt Program.cs
+
+# ローカルでテスト実行
+dotnet run
+
+### ACRでイメージをビルド(2回目, 1.0.1)
+az acr build -r $acr -t date:1.0.1 .
+
+### ACIでコンテナーを実行(2回目, 1.0.1)
+az container create -n date -g $g --restart-policy Never \
+--image $acr.azurecr.io/date:1.0.1 \
+--acr-identity $id --assign-identity $id
+
+### ACIのログを取得(2回目, 1.0.1)
+az container logs -n date -g $g
+
+### 再実行(3回目, 1.0.1)、ログ取得
+sleep 10
+az container start -n date -g $g
+az container logs -n date -g $g
+
+### リソースグループを削除
+az group delete -n $g -y
